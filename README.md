@@ -17,7 +17,7 @@ pip install python-sat
 Running the program:
 
 ```bash
-python binomial.py
+python ualbp.py
 ```
 
 ## Authors

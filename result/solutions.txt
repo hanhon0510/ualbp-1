@@ -1,0 +1,182 @@
+Instance: JACKSON.IN2-7, Final Stations: 8
+Station 1: 10B
+Station 2: 0F
+Station 3: 4F 9B
+Station 4: 3F
+Station 5: 7B
+Station 6: 2F
+Station 7: 8B
+Station 8: 1F 5B 6B
+
+Instance: JACKSON.IN2-9, Final Stations: 6
+Station 1: 0F
+Station 2: 1F 3F
+Station 3: 2F 4F 5F
+Station 4: 6F 7F
+Station 5: 8F
+Station 6: 9F 10B
+
+Instance: JACKSON.IN2-10, Final Stations: 5
+Station 1: 0F 10B
+Station 2: 8B 9B
+Station 3: 3F 6B
+Station 4: 1F 2F
+Station 5: 4F 5F 7B
+
+Instance: JACKSON.IN2-13, Final Stations: 4
+Station 1: 0F 10B
+Station 2: 3F 9B
+Station 3: 4F 7B 8B
+Station 4: 1F 2F 5B 6B
+
+Instance: JACKSON.IN2-14, Final Stations: 4
+Station 1: 0F 10B
+Station 2: 3F 9B
+Station 3: 4F 7B 8B
+Station 4: 1F 2F 5B 6B
+
+Instance: JACKSON.IN2-21, Final Stations: 3
+Station 1: 0F 10B
+Station 2: 1F 2F 4F 8B 9B
+Station 3: 3F 5F 6B 7B
+
+Instance: JAESCHKE.IN2-6, Final Stations: 8
+Station 1: 0F
+Station 2: 1F
+Station 3: 8B
+Station 4: 5B
+Station 5: 2F 6B
+Station 6: 7B
+Station 7: 3F
+Station 8: 4F
+
+Instance: JAESCHKE.IN2-7, Final Stations: 7
+Station 1: 8B
+Station 2: 5B 6B
+Station 3: 0F
+Station 4: 7B
+Station 5: 2F
+Station 6: 1F 4B
+Station 7: 3B
+
+Instance: JAESCHKE.IN2-8, Final Stations: 6
+Station 1: 0F
+Station 2: 8B
+Station 3: 2F 7B
+Station 4: 1F 5B
+Station 5: 3F
+Station 6: 4B 6F
+
+Instance: JAESCHKE.IN2-10, Final Stations: 5
+Station 1: 8B
+Station 2: 6B 7B
+Station 3: 0F 5B
+Station 4: 2F 4B
+Station 5: 1F 3B
+
+Instance: JAESCHKE.IN2-18, Final Stations: 3
+Station 1: 0F 8B
+Station 2: 1F 2F 6B 7B
+Station 3: 3F 4B 5B
+
+Instance: LUTZ1.IN2-1414, Final Stations: 12
+Station 1: 0F 1F 31B
+Station 2: 4F 22B 30B
+Station 3: 2F 5F 29B
+Station 4: 6F 8F 28B
+Station 5: 7F 10F 27B
+Station 6: 11F 23B 26B
+Station 7: 12F 25B
+Station 8: 3F
+Station 9: 9F 14F 24B
+Station 10: 13F 21B
+Station 11: 15F 16F 20B
+Station 12: 17F 18F 19B
+
+Instance: MANSOOR.IN2-48, Final Stations: 5
+Station 1: 0F 10B
+Station 2: 1F
+Station 3: 2B
+Station 4: 3F 4F 9B
+Station 5: 5F 6F 7B 8B
+
+Instance: MANSOOR.IN2-62, Final Stations: 4
+Station 1: 0F 1F
+Station 2: 3F 4F 10B
+Station 3: 5F 6F 9B
+Station 4: 2F 7B 8B
+
+Instance: MANSOOR.IN2-94, Final Stations: 3
+Station 1: 0F 1F 10B
+Station 2: 3F 4F 9B
+Station 3: 2F 5F 6F 7B 8B
+
+Instance: MERTENS.IN2-6, Final Stations: 6
+Station 1: 0F 6B
+Station 2: 1F
+Station 3: 5B
+Station 4: 4B
+Station 5: 2F
+Station 6: 3B
+
+Instance: MERTENS.IN2-7, Final Stations: 5
+Station 1: 0F 6B
+Station 2: 2B 3F
+Station 3: 5B
+Station 4: 1F
+Station 5: 4B
+
+Instance: MERTENS.IN2-8, Final Stations: 5
+Station 1: 0F 5B
+Station 2: 3F 6B
+Station 3: 4B
+Station 4: 1F
+Station 5: 2B
+
+Instance: MERTENS.IN2-10, Final Stations: 3
+Station 1: 0F 2B 6B
+Station 2: 3F 5B
+Station 3: 1F 4B
+
+Instance: MERTENS.IN2-15, Final Stations: 3
+Station 1: 2B 5B 6B
+Station 2: 0F
+Station 3: 1F 3B 4B
+
+Instance: MERTENS.IN2-18, Final Stations: 2
+Station 1: 0F 2B 5B
+Station 2: 1F 3F 4B 6B
+
+Instance: MITCHELL.IN2-21, Final Stations: 7
+Station 1: 0F 18B 19B 20B
+Station 2: 2F
+Station 3: 1B 3F 16B
+Station 4: 4F 13B 15B 17B
+Station 5: 5F 6F 14B
+Station 6: 7F 9B 10B 12B
+Station 7: 8F 11B
+
+Instance: MITCHELL.IN2-26, Final Stations: 6
+Station 1: 0F 18B 19B
+Station 2: 2F 16B
+Station 3: 3F 15B 17B
+Station 4: 4F 12B 14B
+Station 5: 1F 5F 6F 9B 10B 11B 13B
+Station 6: 7F 8B 20B
+
+Instance: MITCHELL.IN2-35, Final Stations: 6
+Station 1: 0F 18B 19B
+Station 2: 2F 16B 17B
+Station 3: 3F 15B
+Station 4: 4F 13B 14B
+Station 5: 1F 5F 6F 9B 10B 11B 12B 20B
+Station 6: 7F 8B
+
+Instance: MITCHELL.IN2-39, Final Stations: 6
+Station 1: 0F 18B 19B
+Station 2: 2F 16B 17B
+Station 3: 3F 15B
+Station 4: 4F 13B 14B
+Station 5: 1F 5F 6F 9B 10B 11B 12B 20B
+Station 6: 7F 8B
+

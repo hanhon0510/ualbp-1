@@ -1,6 +1,11 @@
 from pysat.solvers import Glucose3
 import csv
 import os
+import time
+import threading
+from multiprocessing import Process, Queue
+
+CURRENT_SOLVER = None
 
 def read_ualbp_file(file_path):
     with open(file_path, 'r') as file:
@@ -91,6 +96,8 @@ def check_cycle_time(model, num_tasks, num_stations, tasks, y_vars, cycle_time):
     return violations
 
 def solve_ualbp_iterative(num_tasks, num_stations, tasks, precedences, cycle_time):
+
+    global CURRENT_SOLVER
     variables = generate_ualbp_variables(num_tasks, num_stations)
     base_clauses, y_vars = generate_base_clauses(num_tasks, num_stations, tasks, precedences, variables)
     
@@ -100,6 +107,7 @@ def solve_ualbp_iterative(num_tasks, num_stations, tasks, precedences, cycle_tim
         iteration += 1
         print(f"Iteration {iteration}: Solving SAT with {len(base_clauses) + len(extra_clauses)} clauses...", flush=True)
         solver = Glucose3()
+        CURRENT_SOLVER = solver
         for clause in base_clauses + extra_clauses:
             solver.add_clause(clause)
         if not solver.solve():
@@ -133,6 +141,30 @@ def solve_ualbp(num_tasks, num_stations, tasks, precedences, cycle_time):
         solution = solve_ualbp_iterative(num_tasks, current_num_stations, tasks, precedences, cycle_time)
     return solution, current_num_stations
 
+def solver_process(num_tasks, num_stations, tasks, precedences, cycle_time, queue):
+    result = solve_ualbp(num_tasks, num_stations, tasks, precedences, cycle_time)
+    queue.put(result)
+
+def solve_instance_with_timeout(num_tasks, num_stations, tasks, precedences, cycle_time, timeout=60):
+    q = Queue()
+    p = Process(target=solver_process, args=(num_tasks, num_stations, tasks, precedences, cycle_time, q))
+    start_time = time.time()
+    p.start()
+    p.join(timeout)
+    elapsed_time = time.time() - start_time
+    if p.is_alive():
+        print(f"Timeout reached after {elapsed_time:.2f} seconds. Terminating solver process...", flush=True)
+        p.terminate()
+        p.join()
+        return None, "TLE", "TLE"
+    else:
+        if not q.empty():
+            solution, final_num_stations = q.get()
+            return solution, final_num_stations, elapsed_time
+        else:
+            return None, "TLE", "TLE"
+
+
 def write_solution_to_txt(instance_name, solution, final_num_stations, txt_file):
     with open(txt_file, 'a') as f:
         f.write(f"Instance: {instance_name}, Final Stations: {final_num_stations}\n")
@@ -140,14 +172,16 @@ def write_solution_to_txt(instance_name, solution, final_num_stations, txt_file)
             f.write(f"Station {i+1}: {' '.join(station)}\n")
         f.write("\n")
 
-def process_instances(csv_file, output_csv, output_txt, num_rows=10):
+def process_instances(csv_file, output_csv, output_txt, start_row, end_row):
     results = []
     with open(csv_file, newline='') as f:
         reader = csv.DictReader(f)
-        count = 0
-        for row in reader:
-            if count >= num_rows:
+        for row_index, row in enumerate(reader, start=1):
+            if row_index < start_row:
+                continue
+            if row_index > end_row:
                 break
+            
             full_name = row['name'].strip()
             try:
                 lb = int(row['lb'].strip())
@@ -173,22 +207,35 @@ def process_instances(csv_file, output_csv, output_txt, num_rows=10):
                 print(f"Error reading instance file {instance_file}: {e}")
                 continue
             
-            print(f"Processing {full_name}: cycle_time={cycle_time}, initial stations (lb)={lb}", flush=True)
-            solution, final_num_stations = solve_ualbp(num_tasks, lb, tasks, precedences_inst, cycle_time)
-            results.append({
-                'name': full_name,
-                'lb': lb,
-                'final_num_stations': final_num_stations
-            })
-            write_solution_to_txt(full_name, solution, final_num_stations, output_txt)
-            count += 1
+            print(f"Processing row {row_index}, {full_name}: cycle_time={cycle_time}, initial stations (lb)={lb}", flush=True)
+            
+            solution, final_num_stations, elapsed_time = solve_instance_with_timeout(
+                num_tasks, lb, tasks, precedences_inst, cycle_time, timeout=7200)
+            
+            if elapsed_time == "TLE":
+                results.append({
+                    'name': full_name,
+                    'lb': lb,
+                    'final_num_stations': "TLE",
+                    'time': "TLE"
+                })
+                print(f"Row {row_index} timed out after 60 seconds.", flush=True)
+            else:
+                results.append({
+                    'name': full_name,
+                    'lb': lb,
+                    'final_num_stations': final_num_stations,
+                    'time': f"{elapsed_time:.2f}"
+                })
+                write_solution_to_txt(full_name, solution, final_num_stations, output_txt)
     
     with open(output_csv, 'w', newline='') as out:
-        fieldnames = ['name', 'lb', 'final_num_stations']
+        fieldnames = ['name', 'lb', 'final_num_stations', 'time']
         writer = csv.DictWriter(out, fieldnames=fieldnames)
         writer.writeheader()
         for res in results:
             writer.writerow(res)
+    
     print(f"Summary results exported to {output_csv}", flush=True)
     print(f"Detailed solutions exported to {output_txt}", flush=True)
 
@@ -198,7 +245,11 @@ if __name__ == '__main__':
         os.makedirs(result_folder)
     
     input_csv = "minit5_2.csv"
-    output_csv = os.path.join(result_folder, "results.csv")
-    output_txt = os.path.join(result_folder, "solutions.txt")
+    output_csv = os.path.join(result_folder, "results2.csv")
+    output_txt = os.path.join(result_folder, "solutions2.txt")
+
+    with open(output_txt, 'w') as f:
+        f.write("")
     
-    process_instances(input_csv, output_csv, output_txt, num_rows=25)
+    process_instances(input_csv, output_csv, output_txt, start_row=1, end_row=2)
+    # process_instances(input_csv, output_csv, output_txt, start_row=2, end_row=100)

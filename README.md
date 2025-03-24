@@ -6,18 +6,30 @@ This project uses a SAT encoding based binomial encoding to solve the UALBP-1 Pr
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-### Prerequisites
+## Requirements and Installation
 
-What things you need to install the software and how to install them.
+1. **Python Version**  
+   Make sure you have Python 3.8 installed (or higher, if compatible).
 
-```bash
-pip install python-sat
-```
-
-Running the program:
+2. **Virtual Environment**  
+   Create and activate a virtual environment:
 
 ```bash
-python ualbp.py
+py -3.8 -m venv venv38
+venv38\Scripts\activate
 ```
 
-## Authors
+3. **Install Dependency**
+   Download and install the pypblib wheel from this link https://github.com/rjungbeck/pypblib/releases/download/pypblib-v1.0.24/pypblib-0.0.4-cp38-cp38-win_amd64.whl, then install the required Python libraries
+
+```bash
+pip install yourSavePath\pypblib-0.0.4-cp38-cp38-win_amd64.whl
+pip install python-sat[aiger,approxmc,cryptosat,pblib]
+pip install pypblib
+```
+
+4. **Run the program**
+
+```bash
+python ualbp_naive.py
+```

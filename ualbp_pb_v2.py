@@ -92,7 +92,7 @@ def solve_ualbp_iterative(num_tasks, num_stations, tasks, precedences, cycle_tim
     iteration = 0
     while True:
         iteration += 1
-        print(f"Iteration {iteration}: Solving SAT with {len(base_clauses) + len(extra_clauses)} clauses...", flush=True)
+        print(f"Iteration {iteration}: Solving SAT with {len(base_clauses) + len(extra_clauses)} base clauses...", flush=True)
         solver = Glucose3()
         CURRENT_SOLVER = solver
 
@@ -101,6 +101,7 @@ def solve_ualbp_iterative(num_tasks, num_stations, tasks, precedences, cycle_tim
         print("Base clauses:")
         print(base_clauses)
 
+        clause_count = len(base_clauses) + len(extra_clauses)
         next_var = num_tasks * num_stations * 2
 
         for clause in base_clauses + extra_clauses:
@@ -114,38 +115,38 @@ def solve_ualbp_iterative(num_tasks, num_stations, tasks, precedences, cycle_tim
                 weights.append(tasks[i])
                 lits.append(variables[i][s][1])
                 weights.append(tasks[i])
-
-            # Using psuedo-boolean to impose the cycle time constraint
             pb_constraint = PBEnc.leq(lits=lits, weights=weights, bound=cycle_time, top_id=next_var, encoding=EncType.best)
+            pb_clauses_count = len(pb_constraint.clauses)
+            clause_count += pb_clauses_count
             for clause in pb_constraint.clauses:
                 solver.add_clause(clause)
             print(f"PB clauses for station {s}:")
             print(pb_constraint.clauses)
-
             local_max = next_var
-            print(f"Local max for station {s}: {local_max}")
             for clause in pb_constraint.clauses:
                 local_max = max(local_max, max(abs(l) for l in clause))
             next_var = local_max + 1
-            
+
+        variable_count = next_var - 1
+
         if not solver.solve():
             print("No solution found", flush=True)
             solver.delete()
-            return None
+            return None, clause_count, iteration, variable_count
         else:
             model = solver.get_model()
             decoded = decode_solution(model, variables)
             print("Decoded solution:", decoded)
             solver.delete()
-            return decoded
+            return decoded, clause_count, iteration, variable_count
 
 def solve_ualbp(num_tasks, num_stations, tasks, precedences, cycle_time):
     current_num_stations = num_stations
-    solution = solve_ualbp_iterative(num_tasks, current_num_stations, tasks, precedences, cycle_time)
+    solution, clause_count, iteration_count, variable_count = solve_ualbp_iterative(num_tasks, current_num_stations, tasks, precedences, cycle_time)
     while solution is None:
         current_num_stations += 1
-        solution = solve_ualbp_iterative(num_tasks, current_num_stations, tasks, precedences, cycle_time)
-    return solution, current_num_stations
+        solution, clause_count, iteration_count, variable_count = solve_ualbp_iterative(num_tasks, current_num_stations, tasks, precedences, cycle_time)
+    return solution, current_num_stations, clause_count, iteration_count, variable_count
 
 def solver_process(num_tasks, num_stations, tasks, precedences, cycle_time, queue):
     result = solve_ualbp(num_tasks, num_stations, tasks, precedences, cycle_time)
@@ -162,13 +163,13 @@ def solve_instance_with_timeout(num_tasks, num_stations, tasks, precedences, cyc
         print(f"Timeout reached after {elapsed_time:.2f} seconds. Terminating solver process...", flush=True)
         p.terminate()
         p.join()
-        return None, "TLE", "TLE"
+        return None, "TLE", "TLE", "TLE", "TLE", "TLE"
     else:
         if not q.empty():
-            solution, final_num_stations = q.get()
-            return solution, final_num_stations, elapsed_time
+            solution, final_num_stations, clause_count, iteration_count, variable_count = q.get()
+            return solution, final_num_stations, clause_count, iteration_count, variable_count, elapsed_time
         else:
-            return None, "TLE", "TLE"
+            return None, "TLE", "TLE", "TLE", "TLE", "TLE"
 
 def write_solution_to_txt(instance_name, decoded, txt_file):
     station_assignments = {}
@@ -198,9 +199,6 @@ def process_instances(csv_file, output_csv, output_txt, start_row, end_row):
             if row_index > end_row:
                 break
             
-            # if row['final_num_stations'] != 'TLE':
-            #     continue
-
             full_name = row['name'].strip()
             try:
                 value = row['final_num_stations'].strip()
@@ -226,34 +224,36 @@ def process_instances(csv_file, output_csv, output_txt, start_row, end_row):
                 continue
             print(f"Processing row {row_index}, {full_name}: cycle_time={cycle_time}, initial stations (lb)={lb}", flush=True)
             
-            solution, final_num_stations, elapsed_time = solve_instance_with_timeout(
+            solution, final_num_stations, clause_count, iteration_count, variable_count, elapsed_time = solve_instance_with_timeout(
                 num_tasks, lb, tasks, precedences_inst, cycle_time, timeout=900)
             
             print("Elapsed time:", elapsed_time)
-            # Check if we got a timeout/TLE result
             if elapsed_time == "TLE":
                 results.append({
                     'name': full_name,
                     'lb': lb,
                     'final_num_stations': "TLE",
+                    'clauses': "TLE",
+                    'variables': "TLE",
                     'time': "TLE"
                 })
                 print(f"Row {row_index} timed out.", flush=True)
             else:
                 results.append({
                     'name': full_name,
-                    'lb': lb - 1,
+                    'lb': lb,
                     'final_num_stations': final_num_stations,
+                    'clauses': clause_count,
+                    'variables': variable_count,
                     'time': f"{elapsed_time:.2f}"
                 })
                 if solution is not None:
                     write_solution_to_txt(full_name, solution, output_txt)
                 else:
-                    # Even if solution is None, we record the result as unsat.
                     with open(output_txt, 'a') as f:
                         f.write(f"Instance: {instance_name}, No solution found.\n\n")
     with open(output_csv, 'w', newline='') as out:
-        fieldnames = ['name', 'lb', 'final_num_stations', 'time']
+        fieldnames = ['name', 'lb', 'final_num_stations', 'clauses',  'variables', 'time']
         writer = csv.DictWriter(out, fieldnames=fieldnames)
         writer.writeheader()
         for res in results:
@@ -261,15 +261,16 @@ def process_instances(csv_file, output_csv, output_txt, start_row, end_row):
     print(f"Summary results exported to {output_csv}", flush=True)
     print(f"Detailed solutions exported to {output_txt}", flush=True)
 
+
 if __name__ == '__main__':
     result_folder = "result"
     if not os.path.exists(result_folder):
         os.makedirs(result_folder)
-    input_csv = "result/results.csv"
+    input_csv = "result/results_pb_v2.csv"
     output_csv = os.path.join(result_folder, "results_pb2.csv")
     output_txt = os.path.join(result_folder, "solution_pb2.txt")
 
     with open(output_txt, 'w') as f:
         f.write("")
     
-    process_instances(input_csv, output_csv, output_txt, start_row=18, end_row=18)
+    process_instances(input_csv, output_csv, output_txt, start_row=263, end_row=269)
